@@ -87,8 +87,65 @@
     </section>
   </main>
 
+  <script src="https://cdn.trackjs.com/releases/current/tracker.js"></script>
   <script>
     
+    window.TrackJS && TrackJS.install({
+      token: 'YOUR_TOKEN_HERE',           // ← paste real token
+      application: 'cse110-lab9-demo'
+    });
+
+    function reportErrorToBackend(payload) {
+      /* Example POST to your own endpoint.  This is purely for
+        demonstration—replace the URL with an endpoint you control,
+        or stub it out during development. */
+      fetch('https://example.com/log-js-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => { /* ignore network errors in the demo */ });
+    }
+
+     window.onerror = function (msg, src, line, col, err) {
+      const errorData = {
+        type: 'error',
+        message: msg,
+        source: src,
+        line,
+        column: col,
+        stack: err && err.stack
+      };
+      console.group('Global Error Caught');
+      console.error(errorData);
+      console.groupEnd();
+
+      //send to your server
+      reportErrorToBackend(errorData);
+
+      //TrackJS auto-captures it too (nothing extra to do)
+
+      /* return true prevents the default browser error dialog.
+        Omit or set to false if you *want* the red overlay. */
+      return false;
+    };
+
+    // Unhandled Promise rejections
+    window.addEventListener('unhandledrejection', event => {
+      const errorData = {
+        type: 'unhandledrejection',
+        message: event.reason ? event.reason.message : String(event.reason),
+        stack: event.reason && event.reason.stack
+      };
+
+      console.group('Unhandled Promise Rejection');
+      console.error(errorData);
+      console.groupEnd();
+
+      reportErrorToBackend(errorData);
+
+      /* TrackJS captures these automatically as well */
+    });
+
     class MathError extends Error {
       constructor(message) {
         super(message);
@@ -112,7 +169,7 @@
         output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
       } catch(err) {
         if (err instanceof MathError) {
-          console.warn(`${err.name}: ${err.message}`);
+          console.error(`${err.name}: ${err.message}`);
         } else {
           console.error('Calculator failed:', err);
         }
