@@ -88,6 +88,14 @@
   </main>
 
   <script>
+    
+    class MathError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = 'MathError';
+      }
+    }
+
     let form = document.querySelector('form');
     form.addEventListener('submit', e => {
       e.preventDefault();
@@ -95,7 +103,23 @@
       let firstNum = document.querySelector('#first-num').value;
       let secondNum = document.querySelector('#second-num').value;
       let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+
+      try {
+        // Guard – empty fields or non-numeric input?
+        if (firstNum === '' || secondNum === '' || isNaN(firstNum) || isNaN(secondNum)) {
+          throw new MathError('Both inputs must be numbers');
+        }
+        output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      } catch(err) {
+        if (err instanceof MathError) {
+          console.warn(`${err.name}: ${err.message}`);
+        } else {
+          console.error('Calculator failed:', err);
+        }
+        output.textContent = 'Error';
+      } finally {
+        console.log('Calculation attempt comlpete.');
+      }
     });
 
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
@@ -184,6 +208,10 @@
     function firstLevel() { secondLevel(); }
     function secondLevel() { thirdLevel(); }
     function thirdLevel() { console.trace('Console Trace'); }
+
+    
+
+
 
   </script>
 </body>
