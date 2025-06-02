@@ -120,7 +120,7 @@
         output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
       } catch(err) {
         if (err instanceof MathError) {
-          console.warn(`${err.name}: ${err.message}`);
+          console.error(`${err.name}: ${err.message}`);
         } else {
           console.error('Calculator failed:', err);
         }
